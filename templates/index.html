@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Custom Website</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- =====BOX ICONS===== -->
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+
+    <style>
+        .chart-container {
+            width: 80%;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav bd-grid">
+        <div>
+            <a href="#" class="nav__logo">@Explore Bharat</a>
+        </div>
+        <div class="navbar">
+            <ul>
+                <li class="nav__item"><a href="#home" class="nav__link active-link">Home</a></li>
+                <li class="nav__item"><a href="#analysis" class="nav__link">Analysis</a></li>
+                <li class="nav__item"><a href="/quiz" class="nav__link">Quiz</a></li>
+                <li class="nav__item"><a href="{{ url_for('explore') }}" class="nav__link active-link">Explore</a></li>
+            </ul>
+            </ul>
+        </div>
+    </nav>
+    <div class="wrapper">
+        <section class="home section" id="home"></section>
+        <div class="slideshow">
+            <div class="slide" style="background-image: url('static/img/h.png');"></div>
+            <div class="slide" style="background-image: url('static/img/l.png');"></div>
+            <div class="slide" style="background-image: url('static/img/j.png');"></div>
+            <div class="slide" style="background-image: url('static/img/g.png');"></div>
+            <div class="slide" style="background-image: url('static/img/k.png');"></div>
+        </div>
+        <div class="content">
+            <div class="center">
+                <h1 class="animated-text">Welcome to Incredible India</h1>
+                <h2 class="animated-subtext">India Awaits: Discover, Explore, Experience</h2>
+            </div>
+            <div class="analysis-section" id="analysis">
+                <div class="analysis-content">
+                    <h2>Analysis: Tourist Places Distribution</h2>
+                    <p>India, with its vast diversity, is divided into distinct zones, each offering unique travel experiences. The Central Zone (39 places) is known for its historical temples and wildlife sanctuaries, while the Eastern Zone (45 places) features cultural hubs and natural wonders like the Sundarbans. The North Eastern Zone (14 places) is celebrated for its stunning landscapes and rich biodiversity, including the Kaziranga National Park. The Northern Zone (89 places) blends historical landmarks and natural beauty, with highlights such as Delhi and the Taj Mahal. The Southern Zone (98 places) offers a mix of scenic backwaters, ancient ruins, and vibrant cities, including Kerala and Chennai. Finally, the Western Zone (40 places) is renowned for its lively cities, historic forts, and the vast Rann of Kutch. Each zone presents a unique facet of India's rich cultural and natural heritage, making it a diverse destination for travelers.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="myBarChart"></canvas>
+                </div>
+            </div>
+            <div class="analysis-section">
+                <div class="analysis-content">
+                    <h2>Analysis: Tourist Attractions by Establishment Decade</h2>
+                    <p>This data categorizes tourist attractions based on their establishment years. The distribution shows that the majority of attractions were established in the most recent decades, with the highest number dating from 1901 to 2020, indicating a surge in new attractions over the last century. Earlier periods, such as 1500-1600, have fewer establishments. This trend reflects a significant increase in the development of tourist destinations in more recent years, showcasing the expansion and evolution of tourism over time.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="myRoadChart"></canvas>
+                </div>
+            </div>
+            <div class="analysis-section">
+                <div class="analysis-content">
+                    <h2>Analysis: Popular Tourist Destinations Rank</h2>
+                    <p>This chart shows the popularity ranking of top tourist destinations in India. The ranking is based on the number of visits and overall attractiveness of each destination.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="myRankChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Slideshow
+            const slides = document.querySelectorAll('.slide');
+            let currentSlide = 0;
+            slides[currentSlide].style.opacity = 1;
+
+            setInterval(() => {
+                slides[currentSlide].style.opacity = 0;
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].style.opacity = 1;
+            }, 3000);
+
+            // Bar Chart
+            const ctxBar = document.getElementById('myBarChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Central', 'Eastern', 'North Eastern', 'Northern', 'Southern', 'Western'],
+                    datasets: [{
+                        label: 'Number of Tourist Places in India',
+                        data: [39, 45, 14, 89, 98, 40],
+                        backgroundColor: [
+                            'rgba(0, 0, 139, 0.7)', // Dark Blue
+                            'rgba(255, 165, 0, 0.7)', // Orange
+                            'rgba(255, 0, 0, 0.7)', // Red
+                            'rgba(255, 255, 0, 0.7)', // Yellow
+                            'rgba(0, 128, 0, 0.7)', // Green
+                            'rgba(128, 0, 128, 0.7)' // Purple
+                        ],
+                        borderColor: [
+                            'rgba(0, 0, 139, 1)', // Dark Blue
+                            'rgba(255, 165, 0, 1)', // Orange
+                            'rgba(255, 0, 0, 1)', // Red
+                            'rgba(255, 255, 0, 1)', // Yellow
+                            'rgba(0, 128, 0, 1)', // Green
+                            'rgba(128, 0, 128, 1)' // Purple
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: 'white',
+                            font: {
+                                weight: 'bold'
+                            },
+                            formatter: function(value, context) {
+                                return value;
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    animation: {
+                        duration: 0
+                    }
+                }
+            });
+
+            // Road-Type Animation Chart
+            const ctxRoad = document.getElementById('myRoadChart').getContext('2d');
+            const data = [15, 16, 14, 12, 98]; // Corrected data
+            const labels = ['1500-1600', '1601-1700', '1701-1800', '1801-1900', '1901-2020'];
+            let currentIndex = 0;
+            const chartData = {
+                labels: [],
+                datasets: [{
+                    label: 'Tourist Attractions by Establishment Decade',
+                    data: [],
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            const config = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            };
+
+            const myRoadChart = new Chart(ctxRoad, config);
+
+            function addData() {
+                if (currentIndex < data.length) {
+                    chartData.labels.push(labels[currentIndex]);
+                    chartData.datasets[0].data.push(data[currentIndex]);
+                    myRoadChart.update();
+                    currentIndex++;
+                    setTimeout(addData, 700); // Adjust the delay as needed
+                }
+            }
+
+            addData();
+
+             // Rank Chart
+             const ctxRank = document.getElementById('myRankChart').getContext('2d');
+            new Chart(ctxRank, {
+                type: 'bar',
+                data: {
+                    labels: ['Agra', 'Kerala', 'Jaipur', 'Goa', 'Rishikesh'],
+                    datasets: [{
+                        data: [5, 4, 3, 2, 1],
+                        backgroundColor: [
+                                'rgba(54, 162, 235, 0.7)', // Blue
+                                'rgba(255, 99, 132, 0.7)', // Red
+                                'rgba(255, 206, 86, 0.7)', // Yellow
+                                'rgba(75, 192, 192, 0.7)', // Turquoise
+                                'rgba(153, 102, 255, 0.7)' // Purple
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 1)', // Blue
+                                'rgba(255, 99, 132, 1)', // Red
+                                'rgba(255, 206, 86, 1)', // Yellow
+                                'rgba(75, 192, 192, 1)', // Turquoise
+                                'rgba(153, 102, 255, 1)' // Purple
+                            ],
+                            borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            
+            
+        });
+    </script>
+    <!--===== FOOTER =====-->
+    <footer class="footer">
+        <p class="footer__title">Boda Kalyan Singh</p>
+        <div class="footer__social">
+            <a href="https://github.com/BodaKalyanSingh" class="footer__icon"><i class='bx bxl-github' ></i></a>
+            <a href="https://www.linkedin.com/in/boda-kalyan-singh-4954011a3/" class="footer__icon"><i class='bx bxl-linkedin' ></i></a>
+            <a href="https://www.instagram.com/kalyansinghboda/" class="footer__icon"><i class='bx bxl-instagram' ></i></a>
+            <a href="https://x.com/KalyanSinghNaik" class="footer__icon"><i class='bx bxl-twitter' ></i></a>
+        </div>
+        <p class="footer__copy">&#169; bodakalyansingh. All rights reserved</p>
+    </footer>
+</body>
+</html>

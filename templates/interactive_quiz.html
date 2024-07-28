@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Map Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .question {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            animation: slideIn 1s ease-in-out;
+        }
+
+        .options button {
+            padding: 10px 20px;
+            font-size: 1em;
+            margin: 5px;
+            border: none;
+            background-color: #fda312;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .options button:hover {
+            background-color: #1df90d;
+            transform: scale(1.05);
+        }
+
+        .results-container {
+            width: 20%;
+            margin-top: 20px;
+            animation: fadeIn 3s ease-in-out;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .results-list {
+            padding: 0;
+            list-style-type: none;
+            animation: fadeIn 3s ease-in-out;
+        }
+
+        .results-list li {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #2f00be;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add box-shadow */
+            font-family: Arial, sans-serif; /* Specify font */
+            font-size: 16px;
+            color: #fff; /* Text color */
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .results-list li:hover {
+            transform: scale(1.05);
+            background-color: #fc7507;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced hover shadow */
+        }
+
+        .progress-indicator {
+            font-size: 1.2em;
+            margin-top: 10px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <div class="results-text" id="results-text">Based on your Quiz answers, you will get the tourist places:</div>
+        <ul class="results-list" id="results-list"></ul>
+    </div>
+    <div class="quiz-container">
+        <div class="progress-indicator" id="progress-indicator">1/5</div>
+        <div class="question" id="question">Loading question...</div>
+        <div class="options" id="options"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.3/dist/confetti.browser.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const questions = [
+                {
+                    question: "Which zone are you interested in?",
+                    options: ["Northern", "Southern", "Eastern", "Western", "Central"],
+                    answers: ["Northern", "Southern", "Eastern", "Western", "Central"]
+                },
+                {
+                    question: "What type of place do you prefer?",
+                    options: ["War Memorial", "Tomb", "Temple", "Theme Park", "Observatory", "Park", "Zoo", "Museum", "Beach", "National Park"],
+                    answers: ["Northern", "Northern", "Northern", "Northern", "Northern", "Northern", "Northern", "Northern", "Western", "Northern"]
+                },
+                {
+                    question: "How many hours are you willing to spend at a place?",
+                    options: ["<1", "1-2", "2-3", ">3"],
+                    answers: ["Northern", "Northern", "Northern", "Northern"]
+                },
+                {
+                    question: "What is your preferred Google review rating?",
+                    options: ["4.0", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6"],
+                    answers: ["Northern", "Northern", "Northern", "Northern", "Northern", "Northern", "Northern"]
+                },
+                {
+                    question: "Is DSLR allowed important to you?",
+                    options: ["Yes", "No"],
+                    answers: ["Northern", "Northern"]
+                },
+            ];
+
+            let currentQuestion = 0;
+            let selectedZone = '';
+            let selectedPreferences = [];
+
+            const questionEl = document.getElementById('question');
+            const optionsEl = document.getElementById('options');
+            const progressIndicatorEl = document.getElementById('progress-indicator');
+            const resultsListEl = document.getElementById('results-list');
+            const resultsTextEl = document.getElementById('results-text');
+
+            function loadQuestion() {
+                if (currentQuestion < questions.length) {
+                    const q = questions[currentQuestion];
+                    questionEl.textContent = q.question;
+                    optionsEl.innerHTML = '';
+                    progressIndicatorEl.textContent = `${currentQuestion + 1}/${questions.length}`;
+                    q.options.forEach((option, index) => {
+                        const button = document.createElement('button');
+                        button.textContent = option;
+                        button.addEventListener('click', () => {
+                            if (currentQuestion === 0) {
+                                selectedZone = q.answers[index];
+                            } else {
+                                selectedPreferences.push(q.answers[index]);
+                            }
+                            currentQuestion++;
+                            loadQuestion();
+                        });
+                        optionsEl.appendChild(button);
+                    });
+                } else {
+                    showResults();
+                }
+            }
+
+            function showResults() {
+                questionEl.style.display = 'none';
+                optionsEl.style.display = 'none';
+                progressIndicatorEl.style.display = 'none';
+                resultsTextEl.style.display = 'block';
+                displayResultsList(selectedZone);
+                launchConfetti();
+            }
+
+            function displayResultsList(zone) {
+                fetch("{{ url_for('static', filename='data/Top Indian Places to Visitst.csv') }}")
+                    .then(response => response.text())
+                    .then(csvText => {
+                        const zonePlaces = parseCSV(csvText);
+                        resultsListEl.innerHTML = '';
+                        const places = zonePlaces[zone];
+
+                        if (places) {
+                            places.forEach(place => {
+                                const listItem = document.createElement('li');
+                                listItem.textContent = place;
+                                resultsListEl.appendChild(listItem);
+                            });
+                        } else {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = 'No places found';
+                            resultsListEl.appendChild(listItem);
+                        }
+
+                        resultsListEl.style.display = 'block';
+                    });
+            }
+
+            function parseCSV(csvText) {
+                const lines = csvText.split('\n');
+                const result = {};
+                const headers = lines[0].split(',');
+
+                for (let i = 1; i < lines.length; i++) {
+                    const currentline = lines[i].split(',');
+
+                    const zone = currentline[headers.indexOf('Zone')];
+                    const place = currentline[headers.indexOf('Name')];
+
+                    if (!result[zone]) {
+                        result[zone] = [];
+                    }
+                    result[zone].push(place);
+                }
+
+                return result;
+            }
+
+            loadQuestion();
+        });
+
+        function launchConfetti() {
+            var duration = 5 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 }
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 }
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
+</body>
+</html>

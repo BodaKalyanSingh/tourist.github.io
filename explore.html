@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Explore Bharat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: auto; /* Allow scrolling */
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Ensure particles are behind other content */
+        }
+
+        .content {
+            position: relative;
+            z-index: 1; /* Ensure content is on top of particles */
+            padding: 20px;
+            max-width: 1200px; /* Limit the width */
+            margin: auto; /* Center align */
+        }
+
+        .search-section {
+            margin: 20px;
+        }
+
+        .search-by-zone {
+            margin-bottom: 20px;
+        }
+
+        .place-detail {
+            margin-top: 20px;
+        }
+
+        .result-box {
+            border: 1px solid #2f025b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: rgb(5, 5, 5); /* Slightly transparent background */
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .result-box:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-columns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px; /* Space between columns */
+        }
+
+        .result-columns > div {
+            flex: 0.3 0.3 10%; /* Adjust width */
+            min-width: 250px; /* Ensure minimum width for each column */
+        }
+
+        /* New styles for headings and information */
+        .heading {
+            font-style:italic ;
+            color: #f7eb02; /* Change this color as desired */
+            font-weight: bold;
+        }
+
+        .info {
+            color: #ffffff; /* Change this color as desired */
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <nav class="nav bd-grid">
+        <div>
+            <a href="#" class="nav__logo">@Explore Bharat</a>
+        </div>
+        <div class="navbar">
+            <ul>
+                <li class="nav__item"><a href="index.html#home" class="nav__link">Home</a></li>
+                <li class="nav__item"><a href="index.html#analysis" class="nav__link">Analysis</a></li>
+                <li class="nav__item"><a href="/quiz" class="nav__link">Quiz</a></li>
+                <li class="nav__item"><a href="/explore" class="nav__link">Explore</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="content">
+        <div class="search-section" id="explore">
+            <h2>Explore Tourist Places</h2>
+            <!-- Search by Zone -->
+            <div class="search-by-zone">
+                <h3>Search by Zone</h3>
+                <form id="zoneSearchForm">
+                    <select id="zoneSelect" required>
+                        <option value="">Select Zone</option>
+                        <option value="Central">Central</option>
+                        <option value="Eastern">Eastern</option>
+                        <option value="North Eastern">North Eastern</option>
+                        <option value="Northern">Northern</option>
+                        <option value="Southern">Southern</option>
+                        <option value="Western">Western</option>
+                    </select>
+                    <button type="submit">Get Details</button>
+                </form>
+                <div id="zoneSearchResult" class="result-columns"></div>
+                <div id="placeDetail" class="place-detail"></div> <!-- Moved here -->
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        // Particles.js Configuration
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 150,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                }
+            },
+            "retina_detect": true
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let data = [];
+
+            // Fetch CSV data
+            fetch('/static/data/Top Indian Places to Visitst.csv')
+                .then(response => response.text())
+                .then(text => {
+                    const lines = text.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
+                    const headers = lines[0].split(',').map(header => header.trim());
+                    for (let i = 1; i < lines.length; i++) {
+                        const row = lines[i].split(',').map(cell => cell.trim());
+                        const place = {};
+                        headers.forEach((header, index) => {
+                            place[header] = row[index] || ''; // Handle missing values
+                        });
+                        data.push(place);
+                    }
+                })
+                .catch(error => console.error('Error fetching CSV:', error));
+
+            // Handle form submission
+            document.getElementById('zoneSearchForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const zone = document.getElementById('zoneSelect').value;
+                searchByZone(zone);
+            });
+
+            function searchByZone(zone) {
+                const results = data.filter(place => place.Zone.toLowerCase() === zone.toLowerCase());
+                const resultDiv = document.getElementById('zoneSearchResult');
+                resultDiv.innerHTML = results.map((place, index) => `
+                    <div class="result-box">
+                        <h4><a href="#" onclick="showDetails(${data.indexOf(place)}); return false;">${place.Name}</a></h4>
+                    </div>
+                `).join('');
+                document.getElementById('placeDetail').innerHTML = ''; // Clear previous details
+            }
+
+            window.showDetails = function(index) {
+                const place = data[index];
+                if (place) {
+                    const detailDiv = document.getElementById('placeDetail'); // Use placeDetail for details
+                    detailDiv.innerHTML = `
+                        <div class="result-box">
+                            <h4 class="heading">${place.Name}</h4>
+                            <p class="info">State: ${place.State || 'Not Available'}</p>
+                            <p class="info">City: ${place.City || 'Not Available'}</p>
+                            <p class="info">Type: ${place.Type || 'Not Available'}</p>
+                            <p class="info">Establishment Year: ${place['Establishment Year'] || 'Not Available'}</p>
+                            <p class="info">Time Commitment: ${place['time needed to visit in hrs'] || 'Not Available'}</p>
+                            <p class="info">Public Rating: ${place['Google review rating'] || 'Not Available'}</p>
+                            <p class="info">Entrance Fee: ${place['Entrance Fee in INR'] || 'Not Available'}</p>
+                            <p class="info">Airport with 50km Radius: ${place['Airport with 50km Radius'] || 'Not Available'}</p>
+                            <p class="info">Historical Significance: ${place['Significance'] || 'Not Available'}</p>
+                            <p class="info">Short Info: ${place['Discription'] || 'Not Available'}</p> <!-- Fixed key here -->
+                        </div>
+                    `;
+                    document.getElementById('zoneSearchResult').innerHTML = ''; // Clear available places when showing details
+                }
+            };
+        });
+    </script>
+</body>
+</html>
